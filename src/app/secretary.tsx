@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
+import { ClinicSchedule } from '@/components/ClinicSchedule';
 import { Shell } from '@/components/Shell';
 import { Btn, Card, Chip, Field, H, Loading, Note, P, Row, Select, useT } from '@/components/ui';
 import { estOf } from '@/lib/est';
@@ -87,6 +88,7 @@ function Body() {
 
   return (
     <>
+      <ClinicSchedule key={clinic.id} clinicId={clinic.id} slug={clinic.slug} onChange={reload} />
       {offline && <Note>{t('ما في اتصال. تشوف آخر نسخة محفوظة، والأزرار ترجع تشتغل لما يرجع النت.')}</Note>}
       <View style={{ backgroundColor: C.teal, borderRadius: 14, padding: 16, gap: 12 }}>
         <Row style={{ justifyContent: 'space-between' }}>
@@ -201,8 +203,14 @@ function QuickBook({ slug, gov: g0, onDone }: { slug: string; gov: string; onDon
     const { data, error } = await supabase.rpc('book_appointment', { p_slug: slug, p_name: name, p_phone: phone, p_gov: gov, p_area: area, p_type: type, p_day: day ?? null });
     setBusy(false);
     if (error) { setMsg({ tone: 'err', text: errText(error) }); return; }
-    const r = data as { full: boolean; next_day?: string; seq?: number };
-    if (r.full) { setFull(r.next_day!); setMsg({ tone: 'warn', text: t('اليوم اكتمل. تحجزه بأقرب يوم؟') }); return; }
+    const r = data as { full: boolean; next_day?: string | null; reason?: string; seq?: number };
+    if (r.full) {
+      setFull(r.next_day ?? null);
+      setMsg({ tone: 'warn', text: t(r.next_day
+        ? 'اليوم مو متاح. تحجز بأقرب يوم مفتوح؟'
+        : 'ماكو أيام متاحة خلال الـ٣٠ يوم الجاية.') });
+      return;
+    }
     setFull(null); setName(''); setPhone('');
     setMsg({ tone: 'ok', text: `${t('انحجز رقم')} ${r.seq} ✓` });
     onDone();

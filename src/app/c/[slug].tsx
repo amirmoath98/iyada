@@ -3,6 +3,7 @@ import { Link, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Linking, Pressable, Text, View } from 'react-native';
 import { LangSwitch } from '@/components/Shell';
+import { DAY_LABEL, scheduleDate, type ScheduleDay } from '@/components/ClinicSchedule';
 import { QA } from '@/components/PatientBits';
 import { Btn, Card, Field, H, Loading, Note, P, Row, Screen, Select, useT } from '@/components/ui';
 import { areasOf, GOVS } from '@/lib/geo';
@@ -23,11 +24,23 @@ export default function ClinicPage() {
   const [complaint, setComplaint] = useState('');
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [consent, setConsent] = useState(false);
-  const [err, setErr] = useState(''); const [full, setFull] = useState<string | null>(null);
+  const [err, setErr] = useState('');
+  const [days, setDays] = useState<ScheduleDay[]>([]);
+  const [selectedDay, setSelectedDay] = useState('');
+  const availability = days.find((d) => d.day === selectedDay);
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState<Done | null>(null);
 
+  async function loadSchedule() {
+    const { data, error } = await supabase.rpc('clinic_schedule', { p_slug: slug });
+    if (error) { setErr(t('ما گدرنا نحمّل أيام الحجز. حدّث الصفحة وجرّب مرة ثانية.')); return; }
+    const next = data as ScheduleDay[];
+    setDays(next);
+    setSelectedDay((current) => next.some((d) => d.day === current) ? current : next.find((d) => d.state === 'open')?.day ?? next[0]?.day ?? '');
+  }
+
   useEffect(() => {
+    void loadSchedule();
     supabase.from('clinics').select('*').eq('slug', slug).eq('kind', 'clinic').maybeSingle().then(({ data }) => {
       const cl = data as Clinic | null;
       setC(cl);
@@ -35,19 +48,25 @@ export default function ClinicPage() {
     });
   }, [slug]);
 
-  async function book(day?: string) {
+  async function book() {
+    if (!availability || availability.state !== 'open' || busy) return;
     setErr('');
     if (!consent) { setErr(t('لازم توافق على مشاركة معلوماتك ويا العيادة')); return; }
     setBusy(true);
     const { data, error } = await supabase.rpc('book_appointment', {
       p_slug: slug, p_name: name, p_phone: phone, p_gov: gov, p_area: area, p_type: type,
-      p_complaint: complaint, p_answers: answers, p_day: day ?? null,
+      p_complaint: complaint, p_answers: answers, p_day: selectedDay,
     });
     setBusy(false);
     if (error) { setErr(errText(error)); return; }
-    const r = data as { full: boolean; next_day?: string } & Done;
-    if (r.full) { setFull(r.next_day!); return; }
-    setFull(null); setDone(r);
+    const r = data as ({ full: true; next_day: string | null } | ({ full: false } & Done));
+    if (r.full) {
+      if (r.next_day) setSelectedDay(r.next_day);
+      await loadSchedule();
+      setErr(t(r.next_day ? 'اليوم اللي اخترته صار مو متاح. راجع التاريخ الجديد قبل الحجز.' : 'ماكو أيام متاحة خلال الـ٣٠ يوم الجاية.'));
+      return;
+    }
+    setDone(r);
   }
 
   if (c === undefined) return <Screen><Loading /></Screen>;
@@ -77,6 +96,12 @@ export default function ClinicPage() {
           {done ? <Booked c={c} d={done} /> : (
             <>
               <H>{t('احجز موعد')}</H>
+              {days.length > 0 && <Select label={t('يوم الحجز')} value={selectedDay} options={days.map((d) => d.day)}
+                render={(v) => {
+                  const option = days.find((d) => d.day === v);
+                  return option ? scheduleDate(v) + ' · ' + t(DAY_LABEL[option.state]) : t('اختار يوم');
+                }} onChange={(v) => { setSelectedDay(v); setErr(''); }} />}
+              {availability && availability.state !== 'open' && <Note>{t('اختار يوم مفتوح للحجز.')}</Note>}
               <Field label={t('الاسم الكامل للمريض')} value={name} onChangeText={setName} autoComplete="name" />
               <Field label={t('رقم الواتساب')} value={phone} onChangeText={setPhone} keyboardType="phone-pad" placeholder="07XXXXXXXXX" />
               <P small mute>{t('إذا تحجز لفرد من عائلتك، اكتب اسمه وخلي نفس رقمك.')}</P>
@@ -97,12 +122,8 @@ export default function ClinicPage() {
                 <Text style={{ color: C.ink, flex: 1 }}>{t('أوافق على مشاركة معلوماتي وصوري ويا العيادة، وتوصلني رسائل الحجز على الواتساب.')}</Text>
               </Pressable>
               {err ? <Note tone="err">{err}</Note> : null}
-              {full ? (
-                <>
-                  <Note>{t('اليوم اكتمل. تحجز بأقرب يوم متاح؟')}</Note>
-                  <Btn kind="primary" title={`${t('احجز يوم')} ${full}`} onPress={() => book(full)} busy={busy} style={{ marginTop: 10 }} />
-                </>
-              ) : <Btn kind="primary" title={t('احجز')} onPress={() => book()} busy={busy} style={{ marginTop: 14 }} />}
+              <Btn kind="primary" title={t('احجز')} onPress={book} busy={busy}
+                disabled={availability?.state !== 'open'} style={{ marginTop: 14 }} />
             </>
           )}
         </Card>

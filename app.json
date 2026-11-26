@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "عيادتي",
+    "name": "عيادة",
     "slug": "iyada",
     "version": "1.0.0",
     "orientation": "default",
@@ -12,7 +12,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#ffffff",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -24,7 +24,7 @@
       "favicon": "./assets/favicon.png",
       "output": "single",
       "bundler": "metro",
-      "name": "عيادتي",
+      "name": "عيادة",
       "lang": "ar"
     },
     "plugins": [
@@ -45,6 +45,11 @@
     },
     "extra": {
       "supportsRTL": true
+    },
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
     }
   }
 }

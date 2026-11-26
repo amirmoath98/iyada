@@ -1,6 +1,6 @@
 import { Link, router, usePathname } from 'expo-router';
 import type { ReactNode } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Image, Pressable, Text, View } from 'react-native';
 import { LANGS, setLang } from '@/i18n';
 import { useSession } from '@/lib/session';
 import { C } from '@/lib/theme';
@@ -38,10 +38,8 @@ export function Shell({ need, children }: { need: ('doctor' | 'secretary' | 'par
     <Screen>
       <View style={{ backgroundColor: C.card, borderRadius: 14, borderWidth: 1, borderColor: C.line, padding: 12, gap: 10 }}>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 10 }}>
-          <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: C.teal, alignItems: 'center', justifyContent: 'center' }}>
-            <Text style={{ color: '#fff', fontWeight: '700' }}>ع</Text>
-          </View>
-          <Text style={{ fontWeight: '700', color: C.ink, flexGrow: 1 }}>{active ? `${active.clinic.name}` : t('عيادتي')}</Text>
+          <Image source={require('../../assets/mark.png')} style={{ width: 36, height: 36 }} accessibilityLabel={t('عيادة')} />
+          <Text style={{ fontWeight: '700', color: C.ink, flexGrow: 1 }}>{active ? `${active.clinic.name}` : t('عيادة')}</Text>
           <LangSwitch />
           <Btn small title={t('خروج')} onPress={signOut} />
         </View>

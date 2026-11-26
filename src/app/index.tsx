@@ -1,6 +1,6 @@
 import { Link, router } from 'expo-router';
 import { useEffect } from 'react';
-import { Platform, Pressable, Text, View } from 'react-native';
+import { Image, Platform, Pressable, Text, View } from 'react-native';
 import { LangSwitch } from '@/components/Shell';
 import { Btn, Card, H, Note, P, Row, Screen, useT } from '@/components/ui';
 import { useSession } from '@/lib/session';
@@ -25,16 +25,11 @@ export default function Landing() {
       router.replace(active.role === 'doctor' ? '/doctor' : active.role === 'partner' ? '/partner' : '/secretary');
     }
   }, [session, active]);
-  const home = active ? (active.role === 'doctor' ? '/doctor' : active.role === 'partner' ? '/partner' : '/secretary') : '/login';
+  const home = active ? (active.role === 'doctor' ? '/doctor' : active.role === 'partner' ? '/partner' : '/secretary') : session ? '/login' : '/signup';
   return (
     <Screen>
       <Row style={{ justifyContent: 'space-between' }}>
-        <Row>
-          <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: C.teal, alignItems: 'center', justifyContent: 'center' }}>
-            <Text style={{ color: '#fff', fontWeight: '700', fontSize: 18 }}>ع</Text>
-          </View>
-          <Text style={{ fontWeight: '700', fontSize: 18, color: C.ink }}>{t('عيادتي')}</Text>
-        </Row>
+        <Image source={require('../../assets/logo.png')} style={{ width: 160, height: 45 }} resizeMode="contain" accessibilityLabel={t('عيادة')} />
         <Row><LangSwitch />{isAdmin && <Link href="/admin" asChild><Pressable><Text style={{ color: C.teal }}>{t('الإدارة')}</Text></Pressable></Link>}</Row>
       </Row>
       {!configured && <Note tone="err">{t('التطبيق مو مربوط بقاعدة بيانات. أضف مفاتيح Supabase بملف .env')}</Note>}
@@ -44,7 +39,7 @@ export default function Landing() {
           {t('نظام حجز ودور للعيادات العراقية: السكرتير ينظم، الطبيب يشوف ملف المريض قبل ما يدخل، والمريض يعرف دوره من بيته.')}
         </Text>
         <Row>
-          <Link href={home as never} asChild><Pressable style={{ backgroundColor: '#fff', borderRadius: 10, paddingHorizontal: 20, minHeight: 48, justifyContent: 'center' }}><Text style={{ color: C.teal, fontWeight: '700', fontSize: 16 }}>{session ? t('افتح واجهتي') : t('دخول العيادات')}</Text></Pressable></Link>
+          <Link href={home as never} asChild><Pressable style={{ backgroundColor: '#fff', borderRadius: 10, paddingHorizontal: 20, minHeight: 48, justifyContent: 'center' }}><Text style={{ color: C.teal, fontWeight: '700', fontSize: 16 }}>{session ? t('افتح واجهتي') : t('سجّل عيادتك')}</Text></Pressable></Link>
           <Link href="/c/dr-ahmed" asChild><Pressable style={{ borderColor: 'rgba(255,255,255,.6)', borderWidth: 1, borderRadius: 10, paddingHorizontal: 20, minHeight: 48, justifyContent: 'center' }}><Text style={{ color: '#fff', fontWeight: '600', fontSize: 16 }}>{t('شوف صفحة عيادة تجريبية')}</Text></Pressable></Link>
         </Row>
       </View>

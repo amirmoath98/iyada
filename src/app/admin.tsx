@@ -8,7 +8,7 @@ import { C } from '@/lib/theme';
 import type { Clinic } from '@/lib/types';
 
 const KINDS = ['clinic', 'radiology', 'lab', 'pharmacy'];
-const KIND_LABEL: Record<string, string> = { clinic: 'عيادة', radiology: 'أشعة', lab: 'مختبر', pharmacy: 'صيدلية' };
+const KIND_LABEL: Record<string, string> = { clinic: 'عيادة طبيب', radiology: 'أشعة', lab: 'مختبر', pharmacy: 'صيدلية' };
 const ROLES = ['doctor', 'secretary', 'partner'];
 const ROLE_LABEL: Record<string, string> = { doctor: 'طبيب', secretary: 'سكرتير', partner: 'عيادة مرتبطة' };
 

@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import { useSession } from '@/lib/session';
 import { errText, supabase } from '@/lib/supabase';
 import { C } from '@/lib/theme';
-import { Btn, Card, Chip, Field, H, Note, P, Row, Select, useT } from './ui';
+import { Btn, Card, Chip, Field, H, Note, P, Row, useT } from './ui';
 
 const ROLE_LABEL: Record<string, string> = { doctor: 'طبيب', secretary: 'سكرتير', partner: 'عيادة مرتبطة' };
 type Member = { user_id: string; role: string; email: string | null };
@@ -16,7 +16,7 @@ export function Team({ clinicId }: { clinicId: string }) {
   const [members, setMembers] = useState<Member[]>([]);
   const [invites, setInvites] = useState<Invite[]>([]);
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState('doctor');
+  const [name, setName] = useState('');
   const [msg, setMsg] = useState<{ tone: 'ok' | 'err'; text: string } | null>(null);
 
   const load = async () => {
@@ -30,10 +30,10 @@ export function Team({ clinicId }: { clinicId: string }) {
 
   async function invite() {
     setMsg(null);
-    const { error } = await supabase.rpc('invite_staff', { p_clinic: clinicId, p_email: email, p_role: role });
+    const { error } = await supabase.rpc('invite_clinic_doctor', { p_clinic: clinicId, p_email: email, p_name: name });
     if (error) { setMsg({ tone: 'err', text: errText(error) }); return; }
-    setMsg({ tone: 'ok', text: t('انضافت الدعوة. إذا عنده حساب ينربط هسه، وإذا ما عنده يسوي حساب من «سجّل عيادتك ← عندي دعوة من عيادة» بنفس البريد.') });
-    setEmail(''); load();
+    setMsg({ tone: 'ok', text: t('انضافت الدعوة. خلي الطبيب يسجّل أو يدخل من خيار «دكتور» بنفس البريد.') });
+    setEmail(''); setName(''); load();
   }
 
   return (
@@ -59,9 +59,9 @@ export function Team({ clinicId }: { clinicId: string }) {
         </Row>
       ))}
       <View style={{ marginTop: 6 }}>
-        <Field label={t('بريد الطبيب أو السكرتير الجديد')} value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" style={{ textAlign: 'left' }} />
-        <Select label={t('الدور')} value={role} options={['doctor', 'secretary']} render={(v) => t(ROLE_LABEL[v])} onChange={setRole} />
-        <Btn kind="primary" title={t('أضف للفريق')} onPress={invite} style={{ marginTop: 12 }} disabled={!email.includes('@')} />
+        <Field label={t('اسم الطبيب')} value={name} onChangeText={setName} />
+        <Field label={t('بريد الطبيب')} value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" style={{ textAlign: 'left' }} />
+        <Btn kind="primary" title={t('أضف للفريق')} onPress={invite} style={{ marginTop: 12 }} disabled={!email.includes('@') || name.trim().length < 2} />
       </View>
       {msg && <Note tone={msg.tone}>{msg.text}</Note>}
     </Card>

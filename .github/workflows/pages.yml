@@ -16,8 +16,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       # مفاتيح Supabase العامة (anon key مصمم يكون عام؛ الحماية من RLS)
-      EXPO_PUBLIC_SUPABASE_URL: ${{ vars.SUPABASE_URL }}
-      EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
+      EXPO_PUBLIC_SUPABASE_URL: https://kmktymrpvjaqxsrhpkoq.supabase.co
+      EXPO_PUBLIC_SUPABASE_ANON_KEY: sb_publishable_BqcwD6r-scUssd-s-TQZ2A_1LO3dJZS
       EXPO_PUBLIC_SITE_URL: https://amirmoath98.github.io/iyada
     steps:
       - uses: actions/checkout@v4

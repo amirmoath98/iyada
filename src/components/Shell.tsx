@@ -9,7 +9,7 @@ import i18n from '@/i18n';
 
 const NAV: Record<string, { href: string; label: string }[]> = {
   secretary: [{ href: '/secretary', label: 'الدور اليوم' }, { href: '/settings', label: 'إعدادات العيادة' }],
-  doctor: [{ href: '/doctor', label: 'مرضى اليوم' }, { href: '/archive', label: 'أرشيف المرضى' }, { href: '/settings', label: 'إعدادات العيادة' }],
+  doctor: [{ href: '/doctor', label: 'مرضى اليوم' }, { href: '/archive', label: 'أرشيف المرضى' }],
   partner: [{ href: '/partner', label: 'الإحالات' }, { href: '/settings', label: 'إعدادات العيادة' }],
 };
 
@@ -53,7 +53,10 @@ export function Shell({ need, children }: { need: ('doctor' | 'secretary' | 'par
               </Link>
             ))}
             {memberships.length > 1 && memberships.filter((m) => m !== active).map((m) => (
-              <Btn key={m.clinic.id + m.role} small title={`${t('بدّل إلى')} ${m.clinic.name}`} onPress={() => setActive(m)} />
+              <Btn key={m.clinic.id + m.role} small title={`${t('بدّل إلى')} ${m.clinic.name}`} onPress={() => {
+                setActive(m);
+                router.replace(m.role === 'doctor' ? '/doctor' : m.role === 'partner' ? '/partner' : '/secretary');
+              }} />
             ))}
           </View>
         )}

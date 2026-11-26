@@ -56,9 +56,6 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     return () => { latestLoad.current++; };
   }, [session]);
 
-  return () => sub.subscription.unsubscribe();
-  }, []);
-
   return (
     <SessionCtx.Provider value={{
       session: session ?? null, loading, memberships, isAdmin, active, setActive, userId: session?.user.id ?? null,

@@ -21,6 +21,7 @@ export const SITE_URL = process.env.EXPO_PUBLIC_SITE_URL ?? '';
 // أخطاء قاعدة البيانات -> رسائل مفهومة
 const ERR: Record<string, string> = {
   invalid_phone: 'رقم الموبايل لازم يكون عراقي، مثل 07701234567',
+  separate_account: 'هذا البريد مرتبط بدور ثاني. استخدم بريد مستقل للطبيب.',
   invalid_name: 'اكتب الاسم الكامل',
   already_booked: 'هذا الشخص محجوز بنفس اليوم. لفرد ثاني من العائلة اكتب اسمه.',
   clinic_not_found: 'العيادة مو موجودة',

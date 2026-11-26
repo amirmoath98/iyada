@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, Switch, Text, View } from 'react-native';
+import { ReferralMedia } from '@/components/ReferralMedia';
 import { Attachments, QA } from '@/components/PatientBits';
 import { Shell } from '@/components/Shell';
 import { Btn, Card, Chip, Field, H, Loading, Note, P, Row, Select, useT } from '@/components/ui';
@@ -157,6 +158,7 @@ function PatientFile({ clinic, b, all, st, onPrev, onNext }: {
           {refs.length === 0 ? <P mute>{t('ما في إحالات')}</P> : refs.map((r) => (
             <View key={r.id} style={{ paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: C.line }}>
               <P>{r.what}</P><P small mute={!r.result}>{r.result ? `${t('النتيجة:')} ${r.result}` : t('بانتظار النتيجة')}</P>
+              <ReferralMedia referralId={r.id} />
             </View>
           ))}
         </Card>

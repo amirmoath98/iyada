@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
+import { ReferralMedia } from '@/components/ReferralMedia';
 import { Shell } from '@/components/Shell';
 import { Btn, Card, Chip, Field, H, Note, P, Row, useT } from '@/components/ui';
 import { useSession } from '@/lib/session';
@@ -59,6 +60,7 @@ function Body() {
 
 function RefCard({ r, onDone }: { r: Row; onDone: () => void }) {
   const t = useT();
+  const { active } = useSession();
   const [v, setV] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
@@ -69,6 +71,7 @@ function RefCard({ r, onDone }: { r: Row; onDone: () => void }) {
         <Chip text={`${t('محال من')} ${r.from?.doctor_name ?? ''}`} tone="ref" />
       </Row>
       <P mute small>{fmtDate(r.created_at)} · {t('المطلوب:')} {r.what}</P>
+      {(active?.role === 'doctor' || active?.role === 'partner') && <ReferralMedia referralId={r.id} allowUpload />}
       {r.result ? (
         <View style={{ backgroundColor: C.tealSoft, borderRadius: 10, padding: 10, marginTop: 8 }}><P>{t('النتيجة انرسلت:')} {r.result}</P></View>
       ) : (

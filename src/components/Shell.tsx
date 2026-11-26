@@ -9,7 +9,7 @@ import i18n from '@/i18n';
 
 const NAV: Record<string, { href: string; label: string }[]> = {
   secretary: [{ href: '/secretary', label: 'الدور اليوم' }, { href: '/settings', label: 'إعدادات العيادة' }],
-  doctor: [{ href: '/doctor', label: 'مرضى اليوم' }, { href: '/archive', label: 'أرشيف المرضى' }],
+  doctor: [{ href: '/doctor', label: 'مرضى اليوم' }, { href: '/archive', label: 'أرشيف المرضى' }, { href: '/partner', label: 'الإحالات الواردة' }],
   partner: [{ href: '/partner', label: 'الإحالات' }, { href: '/settings', label: 'إعدادات العيادة' }],
 };
 

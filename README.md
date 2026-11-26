@@ -11,6 +11,7 @@
 | `/archive` | أرشيف المرضى (للطبيب بس) |
 | `/settings` | معلومات العيادة، أسئلة الطبيب، المناطق القريبة، الـ QR، رابط الشاشة، الربط ويا العيادات |
 | `/partner` | العيادة المرتبطة: طلبات الربط، المحالين، رفع النتائج |
+| `/signup` | تسجيل عيادة جديدة، أو حساب لطبيب عنده دعوة |
 | `/admin` | لوحتك: إضافة عيادات وربط الحسابات |
 | `/c/[slug]` | صفحة العيادة والحجز (للمريض، بدون حساب) |
 | `/q/[token]` | متابعة الدور (الرابط اللي يوصل بالواتساب) |
@@ -23,16 +24,15 @@
    - `supabase/migrations/0001_schema.sql`
    - `supabase/migrations/0002_logic.sql`
    - `supabase/seed.sql` (بيانات تجريبية: عيادة `dr-ahmed` ومركز أشعة `rad-center` مرتبطين)
-3. من **Authentication → Users → Add user** سوّي حسابات: إلك، وللطبيب، وللسكرتير، ولمركز الأشعة.
-4. اربط الحسابات (بدّل الـ UUID):
-   ```sql
-   insert into admins (user_id) values ('UUID-حسابك');
-   insert into staff (user_id, clinic_id, role) values
-     ('UUID-الطبيب',   (select id from clinics where slug='dr-ahmed'),   'doctor'),
-     ('UUID-السكرتير', (select id from clinics where slug='dr-ahmed'),   'secretary'),
-     ('UUID-الأشعة',   (select id from clinics where slug='rad-center'), 'partner');
-   ```
-   بعدها تگدر تربط الحسابات الجديدة من `/admin`.
+   - `supabase/migrations/0004_onboarding.sql` (التسجيل الذاتي والدعوات)
+3. من **Authentication → URL Configuration** حط **Site URL** رابط الموقع، وضيف `رابط-الموقع/login` بـ Redirect URLs.
+
+**تسجيل العيادات:** السكرتير يفتح «سجّل عيادتك» بالموقع، ويسوي حساب، ويأكد بريده، فتنسوى العيادة ويصير هو مديرها.
+من «إعدادات العيادة ← فريق العيادة» يضيف بريد الطبيب، والطبيب يسوي حساب من «عندي دعوة من عيادة» بنفس البريد وينربط تلقائياً.
+الطبيب هم يگدر يدير الفريق، حتى ما تنقفل العيادة إذا ترك السكرتير. ولوحة `/admin` تبقى إلك كصاحب التطبيق:
+```sql
+insert into admins (user_id) select id from auth.users where email = 'بريدك';
+```
 
 ## ٢. تشغيل الموقع والتطبيق على جهازك
 

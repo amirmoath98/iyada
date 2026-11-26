@@ -29,6 +29,12 @@ const ERR: Record<string, string> = {
   conflict: 'أحد غيّر الترتيب هسه، حدّثنا الشاشة. جرّب مرة ثانية.',
   not_linked: 'هالعيادة مو مرتبطة',
   empty_queue: 'ما في حجوزات اليوم',
+  invalid_slug: 'رابط العيادة لازم يكون حروف إنكليزية صغيرة وأرقام وشرطة، من ٣ لـ ٤٠ حرف',
+  slug_taken: 'هذا الرابط محجوز لعيادة ثانية، اختار غيره',
+  invalid_email: 'البريد الإلكتروني غلط',
+  cannot_remove_self: 'ما تگدر تشيل نفسك',
+  last_manager: 'لازم يبقى طبيب أو سكرتير واحد على الأقل',
+  too_many: 'وصلت للحد الأعلى من العيادات بهالحساب',
 };
 export function errText(e: unknown): string {
   const m = (e as { message?: string })?.message ?? String(e);

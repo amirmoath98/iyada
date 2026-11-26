@@ -55,8 +55,8 @@ export default function Landing() {
       </View>
       <Card>
         <H>{t('سجّل عيادتك')}</H>
-        <P mute>{t('تواصل ويانا حتى نفتحلك حساب ونجهز صفحة عيادتك وشاشة الصالة. أول ٣ أشهر مجاناً.')}</P>
-        <Row style={{ marginTop: 8 }}><Btn kind="primary" title={t('دخول العيادات')} onPress={() => router.push('/login')} /></Row>
+        <P mute>{t('السكرتير يسجّل العيادة بدقيقتين، ويضيف الطبيب، ويطبع الـ QR. أول ٣ أشهر مجاناً.')}</P>
+        <Row style={{ marginTop: 8 }}><Btn kind="primary" title={t('سجّل عيادتك')} onPress={() => router.push('/signup')} /><Btn title={t('دخول العيادات')} onPress={() => router.push('/login')} /></Row>
       </Card>
     </Screen>
   );

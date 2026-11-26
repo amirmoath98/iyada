@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { Shell } from '@/components/Shell';
+import { Team } from '@/components/Team';
 import { Btn, Card, Chip, Field, H, Note, P, Row, Select, useT } from '@/components/ui';
 import { areasOf, GOVS } from '@/lib/geo';
 import { useSession } from '@/lib/session';
@@ -10,7 +11,7 @@ import { C } from '@/lib/theme';
 import type { Clinic } from '@/lib/types';
 
 export default function Settings() {
-  return <Shell need={['secretary', 'doctor']}><Body /></Shell>;
+  return <Shell need={['secretary', 'doctor', 'partner']}><Body /></Shell>;
 }
 
 const FIELDS: [keyof Clinic, string][] = [
@@ -107,6 +108,7 @@ function Body() {
           <P selectable small>{display}</P>
         </Card>
         <Links clinicId={c.id} />
+        {active!.role !== 'partner' && <Team clinicId={c.id} />}
       </View>
     </>
   );

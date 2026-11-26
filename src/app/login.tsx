@@ -1,4 +1,6 @@
-import { router } from 'expo-router';
+import { Link, router } from 'expo-router';
+import { Pressable, Text } from 'react-native';
+import { C } from '@/lib/theme';
 import { useEffect, useState } from 'react';
 import { Btn, Card, Field, H, Note, P, Screen, useT } from '@/components/ui';
 import { useSession } from '@/lib/session';
@@ -22,7 +24,7 @@ export default function Login() {
     setBusy(true);
     const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password: pass });
     setBusy(false);
-    if (error) setErr(t('البريد أو كلمة السر غلط'));
+    if (error) setErr(/confirm/i.test(error.message) ? t('لازم تأكد بريدك أول. افتح الرسالة اللي وصلتك.') : t('البريد أو كلمة السر غلط'));
   }
 
   return (
@@ -34,6 +36,7 @@ export default function Login() {
         <Field label={t('كلمة السر')} value={pass} onChangeText={setPass} secureTextEntry autoComplete="password" textContentType="password" onSubmitEditing={go} />
         {err ? <Note tone="err">{err}</Note> : null}
         <Btn kind="primary" title={t('دخول')} onPress={go} busy={busy} style={{ marginTop: 14 }} />
+        <Link href="/signup" asChild><Pressable style={{ marginTop: 12 }}><Text style={{ color: C.teal }}>{t('عيادة جديدة؟ سجّلها هنا')}</Text></Pressable></Link>
       </Card>
     </Screen>
   );

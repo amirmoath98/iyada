@@ -1,12 +1,13 @@
 import type { Session } from '@supabase/supabase-js';
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { supabase } from './supabase';
+
 import type { Clinic, Role } from './types';
 
 type Membership = { clinic: Clinic; role: Role };
 type Ctx = {
   session: Session | null; loading: boolean; memberships: Membership[]; isAdmin: boolean;
-  active: Membership | null; setActive: (m: Membership) => void; refresh: () => Promise<void>; signOut: () => Promise<void>;
+  active: Membership | null; userId: string | null; setActive: (m: Membership) => void; refresh: () => Promise<void>; signOut: () => Promise<void>;
 };
 const SessionCtx = createContext<Ctx | null>(null);
 
@@ -19,6 +20,13 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   async function load(s: Session | null) {
     if (!s) { setMemberships([]); setActive(null); setIsAdmin(false); setLoading(false); return; }
+    // يقبل الدعوات اللي على بريده، ويكمل تسجيل عيادة بدأها قبل تأكيد البريد
+    await supabase.rpc('claim_invites');
+    const pending = (s.user.user_metadata as { pending_clinic?: Record<string, string> } | undefined)?.pending_clinic;
+    if (pending) {
+      const { error } = await supabase.rpc('register_clinic', pending);
+      if (!error || /slug_taken|too_many|invalid/.test(error.message)) await supabase.auth.updateUser({ data: { pending_clinic: null } });
+    }
     const { data } = await supabase.from('staff').select('role, clinics(*)').eq('user_id', s.user.id);
     const ms = (data ?? []).map((r: any) => ({ role: r.role as Role, clinic: r.clinics as Clinic })).filter((m) => m.clinic);
     const { data: ad } = await supabase.from('admins').select('user_id').eq('user_id', s.user.id).maybeSingle();
@@ -36,7 +44,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   return (
     <SessionCtx.Provider value={{
-      session, loading, memberships, isAdmin, active, setActive,
+      session, loading, memberships, isAdmin, active, setActive, userId: session?.user.id ?? null,
       refresh: () => load(session),
       signOut: async () => { await supabase.auth.signOut(); },
     }}>

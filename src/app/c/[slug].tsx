@@ -3,7 +3,7 @@ import { Link, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Linking, Pressable, Text, View } from 'react-native';
 import { LangSwitch } from '@/components/Shell';
-import { DAY_LABEL, scheduleDate, type ScheduleDay } from '@/components/ClinicSchedule';
+import { DAY_LABEL, WEEKDAYS, scheduleDate, type ScheduleDay } from '@/components/ClinicSchedule';
 import { QA } from '@/components/PatientBits';
 import { Btn, Card, Field, H, Loading, Note, P, Row, Screen, Select, useT } from '@/components/ui';
 import { areasOf, GOVS } from '@/lib/geo';
@@ -26,6 +26,8 @@ export default function ClinicPage() {
   const [consent, setConsent] = useState(false);
   const [err, setErr] = useState('');
   const [days, setDays] = useState<ScheduleDay[]>([]);
+  const [scheduleLoaded, setScheduleLoaded] = useState(false);
+  const [weekdays, setWeekdays] = useState<number[] | null>(null);
   const [selectedDay, setSelectedDay] = useState('');
   const availability = days.find((d) => d.day === selectedDay);
   const [busy, setBusy] = useState(false);
@@ -34,13 +36,17 @@ export default function ClinicPage() {
   async function loadSchedule() {
     const { data, error } = await supabase.rpc('clinic_schedule', { p_slug: slug });
     if (error) { setErr(t('ما گدرنا نحمّل أيام الحجز. حدّث الصفحة وجرّب مرة ثانية.')); return; }
-    const next = data as ScheduleDay[];
+    const next = (data as ScheduleDay[]).filter((d) => d.state !== 'closed');
     setDays(next);
+    setScheduleLoaded(true);
     setSelectedDay((current) => next.some((d) => d.day === current) ? current : next.find((d) => d.state === 'open')?.day ?? next[0]?.day ?? '');
   }
 
   useEffect(() => {
     void loadSchedule();
+    void supabase.rpc('clinic_working_days', { p_slug: slug }).then(({ data, error }) => {
+      if (!error) setWeekdays((data ?? []) as number[]);
+    });
     supabase.from('clinics').select('*').eq('slug', slug).eq('kind', 'clinic').maybeSingle().then(({ data }) => {
       const cl = data as Clinic | null;
       setC(cl);
@@ -85,6 +91,8 @@ export default function ClinicPage() {
             <View style={{ flex: 1 }}><H size={20} style={{ marginBottom: 0 }}>{c.doctor_name}</H><P mute>{c.specialty}</P></View>
           </Row>
           {c.bio ? <P>{c.bio}</P> : null}
+          {weekdays !== null && <QA q={t('أيام الدوام الأسبوعية')}
+            a={WEEKDAYS.filter((d) => weekdays.includes(d.value)).map((d) => t(d.label)).join('، ') || t('حسب الأيام المفتوحة بالحجز')} />}
           <QA q={t('الدوام')} a={c.hours} />
           {c.fee ? <QA q={t('الكشفية')} a={c.fee} /> : null}
           <QA q={t('العنوان')} a={`${addr}\n${c.area}${c.gov ? `، ${c.gov}` : ''}${c.landmark ? ` · ${c.landmark}` : ''}`} />
@@ -96,6 +104,7 @@ export default function ClinicPage() {
           {done ? <Booked c={c} d={done} /> : (
             <>
               <H>{t('احجز موعد')}</H>
+              {scheduleLoaded && !days.length && <Note>{t('ماكو أيام متاحة للحجز خلال الـ٣٠ يوم الجاية.')}</Note>}
               {days.length > 0 && <Select label={t('يوم الحجز')} value={selectedDay} options={days.map((d) => d.day)}
                 render={(v) => {
                   const option = days.find((d) => d.day === v);

@@ -12,6 +12,16 @@ export type ScheduleDay = {
 };
 type Notice = { id: string; name: string; phone: string; body: string; status: string };
 
+export const WEEKDAYS = [
+  { value: 6, label: 'السبت' },
+  { value: 0, label: 'الأحد' },
+  { value: 1, label: 'الاثنين' },
+  { value: 2, label: 'الثلاثاء' },
+  { value: 3, label: 'الأربعاء' },
+  { value: 4, label: 'الخميس' },
+  { value: 5, label: 'الجمعة' },
+];
+
 export const DAY_LABEL = {
   open: 'مفتوح',
   full: 'الحجز ممتلئ',
@@ -33,6 +43,10 @@ export function scheduleDate(day: string) {
 
 export function ClinicSchedule({ clinicId, slug, onChange }: { clinicId: string; slug: string; onChange: () => void }) {
   const t = useT();
+  const [weekdays, setWeekdays] = useState<number[]>([]);
+  const [savedWeekdays, setSavedWeekdays] = useState<number[] | null>(null);
+  const weekChanged = savedWeekdays !== null &&
+    (savedWeekdays.length !== weekdays.length || weekdays.some((d) => !savedWeekdays.includes(d)));
   const [days, setDays] = useState<ScheduleDay[]>([]);
   const [selected, setSelected] = useState('');
   const [destination, setDestination] = useState('');
@@ -57,7 +71,19 @@ export function ClinicSchedule({ clinicId, slug, onChange }: { clinicId: string;
   }
 
   useEffect(() => {
-    if (show) void load();
+    if (!show) return;
+    let current = true;
+    void load();
+    void supabase.rpc('clinic_working_days', { p_slug: slug }).then(({ data, error }) => {
+      if (!current) return;
+      if (error) setNotice({ tone: 'err', text: errText(error) });
+      else {
+        const week = (data ?? []) as number[];
+        setSavedWeekdays(week);
+        setWeekdays(week);
+      }
+    });
+    return () => { current = false; };
   }, [show, slug]);
 
   useEffect(() => {
@@ -72,6 +98,24 @@ export function ClinicSchedule({ clinicId, slug, onChange }: { clinicId: string;
       });
     return () => { current = false; };
   }, [clinicId, day?.day, day?.state]);
+
+  async function saveWeek() {
+    if (!weekChanged || busy) return;
+    setBusy(true);
+    setNotice(null);
+    const { data, error } = await supabase.rpc('set_clinic_weekdays', { p_clinic: clinicId, p_days: weekdays });
+    if (error) setNotice({ tone: 'err', text: errText(error) });
+    else {
+      const week = data as number[];
+      setSavedWeekdays(week);
+      setWeekdays(week);
+      setDestination('');
+      setConfirm(false);
+      setNotice({ tone: 'ok', text: t('انحفظت أيام الدوام الأسبوعية') });
+      await load();
+    }
+    setBusy(false);
+  }
 
   async function save(action: 'open' | 'close' | 'postpone') {
     if (!day || busy) return;
@@ -101,6 +145,18 @@ export function ClinicSchedule({ clinicId, slug, onChange }: { clinicId: string;
         <Btn small title={t(show ? 'إخفاء التقويم' : 'افتح التقويم')} onPress={() => setShow(!show)} />
       </Row>
       {show && (loading ? <Loading /> : <>
+        {savedWeekdays !== null && <View style={{ marginBottom: 14, gap: 8 }}>
+          <H size={16}>{t('أيام الدوام الأسبوعية')}</H>
+          <P mute small>{t('حدّد الأيام اللي يداوم بيها الدكتور كل أسبوع. الحجوزات المسجلة تبقى، وتگدر تأجّلها من التقويم عند الحاجة.')}</P>
+          <Row>
+            {WEEKDAYS.map(({ value, label }) => (
+              <Btn key={value} small title={t(label)} kind={weekdays.includes(value) ? 'dark' : 'plain'}
+                disabled={busy} onPress={() => setWeekdays((current) => current.includes(value)
+                  ? current.filter((d) => d !== value) : [...current, value])} />
+            ))}
+          </Row>
+          <Row><Btn kind="primary" title={t('احفظ أيام الدوام')} disabled={!weekChanged || busy} onPress={saveWeek} /></Row>
+        </View>}
         <Select
           label={t('اليوم')}
           value={selected}
@@ -116,10 +172,9 @@ export function ClinicSchedule({ clinicId, slug, onChange }: { clinicId: string;
           <Row style={{ marginTop: 10 }}>
             {day.state === 'closed' || day.state === 'postponed'
               ? <Btn title={t('فتح الحجز')} disabled={busy} onPress={() => save('open')} />
-              : <>
-                  <Btn title={t('إغلاق الحجز')} disabled={busy} onPress={() => save('close')} />
-                  <Btn title={t('تأجيل اليوم')} disabled={busy || !day.booked || !targets.length} onPress={() => setConfirm(!confirm)} />
-                </>}
+              : <Btn title={t('إغلاق الحجز')} disabled={busy} onPress={() => save('close')} />}
+            {day.state !== 'postponed' && <Btn title={t('تأجيل اليوم')} disabled={busy || !day.booked || !targets.length}
+              onPress={() => setConfirm(!confirm)} />}
           </Row>
           {confirm && <>
             <Select label={t('اليوم البديل')} value={destination} options={targets.map((d) => d.day)}

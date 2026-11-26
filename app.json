@@ -1,0 +1,50 @@
+{
+  "expo": {
+    "name": "عيادتي",
+    "slug": "iyada",
+    "version": "1.0.0",
+    "orientation": "default",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "iq.iyada.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "package": "iq.iyada.app"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "output": "single",
+      "bundler": "metro",
+      "name": "عيادتي",
+      "lang": "ar"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-localization",
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "نحتاج الوصول للصور حتى ترفع الأشعة والتحاليل."
+        }
+      ]
+    ],
+    "scheme": "iyada",
+    "experiments": {
+      "typedRoutes": true,
+      "baseUrl": "/iyada"
+    },
+    "extra": {
+      "supportsRTL": true
+    }
+  }
+}

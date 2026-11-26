@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, Switch, Text, View } from 'react-native';
+import { ClinicLinks } from '@/components/ClinicLinks';
 import { Attachments, QA } from '@/components/PatientBits';
 import { Shell } from '@/components/Shell';
 import { Btn, Card, Chip, Field, H, Loading, Note, P, Row, Select, useT } from '@/components/ui';
@@ -73,6 +74,7 @@ function Body() {
             : <Card><P mute>{t('اختار مريض من القائمة.')}</P></Card>}
         </View>
       </View>
+      <ClinicLinks clinicId={clinic.id} />
     </>
   );
 }
